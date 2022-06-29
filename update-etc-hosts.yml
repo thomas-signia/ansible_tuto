@@ -1,0 +1,12 @@
+---
+- name: "Update etc/hosts"
+  hosts: all
+  gather_facts : no
+  tasks:
+    - name: populate_etc_hosts
+      manage_hosts:
+        entries:
+          - ip: 10.0.2.51
+            names: ["http1"]
+          - ip: 10.0.2.101
+            names: ["bdd1"]

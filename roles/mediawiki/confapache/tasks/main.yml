@@ -1,0 +1,50 @@
+- name: "mediawiki directory"
+  file:
+    path: "{{mediawiki_directory}}"
+    owner: "{{ web_user }}"
+    group: "{{ web_group }}"
+    state: directory
+
+- name: "uncompress mediawiki archive"
+  unarchive:
+    src: "{{mediawiki_archive_url}}"
+    dest: "{{mediawiki_directory}}"
+    owner: "{{ web_user }}"
+    group: "{{ web_group }}"
+    remote_src: yes
+    extra_opts: --transform=s/mediawiki-[0-9\.]*\///    # remove parent directory from archive
+
+- name: Ensure acl is installed before using an unprivileged user
+  package:
+    name: acl,git
+    state: latest
+
+- name: "mediawiki configuration"
+  become: yes
+  become_user: "{{ web_user }}"
+  args:    # additional arguments supported by 'command' Ansible module
+    creates: "{{mediawiki_directory}}/LocalSettings.php"    # this task should create this file (used to know if this task should be ran or not)
+    chdir: "{{mediawiki_maintenance_directory}}"    # move here before running this task
+  command:
+    php install.php --scriptpath /{{mediawiki_name}}
+    --server https://{{ user.slug }}-http2.qualibre-formations.fr
+    --dbname mediawiki --lang fr
+    --dbuser {{mediawiki_db_user}}
+    --dbpass {{mediawiki_db_password}}
+    --pass {{mediawiki_admin_password}}
+    --dbserver {{mediawiki_db_host}}
+    {{mediawiki_title}} {{mediawiki_admin_user}}    # default argument of 'command' Ansible module
+  run_once: yes
+  delegate_to: "{{item}}"
+  with_items: "{{groups.apache}}"
+
+- name: "mediawiki db update"
+  become: yes
+  become_user: "{{ web_user }}"
+  command:
+    php update.php --quick
+  args:
+    chdir: "{{mediawiki_maintenance_directory}}"
+  run_once: yes    # when having multiple remote hosts, no need to run this task more than once
+  register: update_result    # official task name for Ansible
+  changed_when: "' ...done.' in update_result.stdout"    # used to know if this task should be ran or not

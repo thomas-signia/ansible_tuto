@@ -1,0 +1,13 @@
+---
+- name: "mariadb-server installation"
+  package:
+    name:
+      - mariadb-server
+      - python3-pymysql
+    state: "present"
+
+- name: "start mariadb service"
+  service:
+    name: "mariadb"
+    state: "started"
+    enabled: yes

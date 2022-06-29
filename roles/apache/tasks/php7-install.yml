@@ -1,0 +1,12 @@
+---
+- name: "install php70 packages"
+  package:
+    name:
+      - php
+      - php-mysql
+      - libapache2-mod-php
+      - php-xml
+      - php-mbstring
+      - php-intl
+    state: latest
+  notify: [ "apache restart" ]    # if this task has generated any change, execute all handlers specified here

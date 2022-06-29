@@ -1,0 +1,16 @@
+---
+# tasks file for apache
+- name: "apache installation"
+  package:    # module name
+    name: "apache2"
+    state: "present"    # what is controlled for success ; here, apache2 should be "present"
+
+- name: "apache service activation"
+  service:
+    name: "apache2"
+    state: "started"
+    enabled: yes
+
+- name: "install php7 packages"
+  include: "php7-install.yml"    # insert another .yml file here
+  when: php_install|default(False)|bool

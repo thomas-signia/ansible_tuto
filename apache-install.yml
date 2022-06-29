@@ -1,0 +1,6 @@
+---
+- name: "Installation apache"   # this is a playbook
+  hosts: apache
+  roles:
+    - role: "apache"
+      php_install: yes

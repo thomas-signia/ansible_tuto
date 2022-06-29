@@ -1,0 +1,55 @@
+---
+- name: Clone git repo
+  become: false
+  git:
+    repo: "{{ repo_url }}"
+    dest: /tmp/repo
+  run_once: yes
+  delegate_to: localhost
+
+- name: Copy files to webserver
+  copy:
+    src: "/tmp/repo/ansible-files/"
+    dest: /var/www/html
+    owner: "{{ web_user }}"
+    group: "{{ web_group }}"
+
+# original solution: move Mediawiki files, clone Git, then put Mediawiki files back
+# - name: "move mediawiki files"
+#   copy:
+#     src: /var/www/html/mediawiki/
+#     dest: /var/www/save/mediawiki/
+#     remote_src: yes
+
+# - name: "delete temporary mediawiki files"
+#   file:
+#     path: /var/www/html/
+#     state: absent
+
+# - name: "get html files"
+#   git:
+#     repo: https://gitlab.com/qualibre-info-formations/public/misc-sources.git
+#     dest: /var/www/html/
+#   notify: [ "apache restart" ]
+
+# - name: "restore mediawiki files"
+#   copy:
+#     src: /var/www/save/mediawiki/
+#     dest: /var/www/html/mediawiki/
+#     remote_src: yes
+
+# - name: "delete backup directory"
+#   file:
+#     path: /var/www/save/
+#     state: absent
+
+# - name: "move git one level above"
+#   copy:
+#     src: /var/www/html/ansible-files/
+#     dest: /var/www/html/
+#     remote_src: yes
+
+# - name: "delete original cloning directory"
+#   file:
+#     path: /var/www/save/ansible-files/
+#     state: absent
